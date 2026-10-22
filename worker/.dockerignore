@@ -1,0 +1,10 @@
+.git
+.gitignore
+.env
+.env.*
+bin/
+obj/
+.vs/
+.vscode/
+*.user
+.DS_Store

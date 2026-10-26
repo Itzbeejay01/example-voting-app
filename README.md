@@ -63,3 +63,28 @@ The voting application only accepts one vote per client browser. It does not reg
 This isn't an example of a properly architected perfectly designed distributed app... it's just a simple
 example of the various types of pieces and languages you might see (queues, persistent data, etc), and how to
 deal with them in Docker at a basic level.
+
+## DevOps capstone deliverables
+
+The hardened local stack uses non-root Vote, Result, and Worker containers and unprivileged application port 8080. Run `npm test` in `result`, then `docker compose build --pull` and `docker compose up -d`. Submit a vote at port 8080 and view live results at port 8081.
+
+```mermaid
+flowchart LR
+  U[User] --> V[Vote]
+  V --> R[(Redis)]
+  R --> W[Worker]
+  W --> P[(PostgreSQL PVC)]
+  P --> O[Result]
+  O --> U
+  G[GitHub Actions] --> C[GHCR SHA images]
+  C --> H[Helm release on EKS]
+```
+
+- [Docker security notes](docs/docker-security.md)
+- [AWS EKS Terraform](terraform/README.md)
+- [Voting App Helm chart](helm/voting-app/README.md)
+- [CI and manual deployment workflows](.github/workflows)
+- [Robot Shop observability and reliability](capstone-2/README.md)
+- [Verification record](docs/verification.md)
+
+AWS creation, Kubernetes deployment, rollback, Robot Shop runtime verification, observability evidence, tracing, Slack delivery, and the incident drill require an approved test cluster. They are documented as unverified. Review cloud pricing and destroy the Terraform stack promptly after the demonstration.

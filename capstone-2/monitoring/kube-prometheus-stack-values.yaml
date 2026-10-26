@@ -1,0 +1,19 @@
+grafana:
+  sidecar: { dashboards: { enabled: true, label: grafana_dashboard } }
+prometheus:
+  prometheusSpec:
+    retention: 7d
+    serviceMonitorSelectorNilUsesHelmValues: false
+    resources: { requests: { cpu: 200m, memory: 512Mi }, limits: { cpu: "1", memory: 2Gi } }
+alertmanager:
+  alertmanagerSpec: { secrets: [slack-webhook] }
+additionalPrometheusRulesMap:
+  robot-shop-slo:
+    groups:
+      - name: robot-shop-slo
+        rules:
+          - alert: RobotShopAvailabilityBudgetBurn
+            expr: (1 - sum(rate(http_requests_total{namespace="robot-shop",status!~"5.."}[5m])) / sum(rate(http_requests_total{namespace="robot-shop"}[5m]))) > 0.01
+            for: 10m
+            labels: { severity: warning }
+            annotations: { summary: "Robot Shop availability error budget is burning", runbook_url: "https://github.com/Itzbeejay01/example-voting-app/blob/capstone-1/devops/capstone-2/reliability/runbook.md" }

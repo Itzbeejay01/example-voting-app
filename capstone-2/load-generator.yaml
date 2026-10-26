@@ -1,0 +1,18 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: load-generator, namespace: robot-shop }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: load-generator } }
+  template:
+    metadata: { labels: { app: load-generator } }
+    spec:
+      containers:
+        - name: load-generator
+          image: robotshop/rs-load:latest
+          env:
+            - { name: HOST, value: "http://web:8080/" }
+            - { name: NUM_CLIENTS, value: "2" }
+            - { name: RUN_TIME, value: "24h" }
+            - { name: SILENT, value: "1" }
+          resources: { requests: { cpu: 20m, memory: 32Mi }, limits: { cpu: 200m, memory: 128Mi } }

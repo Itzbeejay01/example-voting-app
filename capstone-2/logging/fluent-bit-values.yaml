@@ -1,0 +1,19 @@
+config:
+  outputs: |
+    [OUTPUT]
+        Name loki
+        Match kube.*
+        Host loki-gateway.logging.svc.cluster.local
+        Port 80
+        Labels namespace=$kubernetes['namespace_name'],pod=$kubernetes['pod_name'],container=$kubernetes['container_name'],service=$kubernetes['labels']['service']
+        Line_Format json
+  filters: |
+    [FILTER]
+        Name kubernetes
+        Match kube.*
+        Merge_Log On
+        Keep_Log On
+    [FILTER]
+        Name modify
+        Match kube.*
+        Add cluster devops-capstone

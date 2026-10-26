@@ -1,0 +1,8 @@
+image:
+  repo: robotshop
+  version: latest
+  pullPolicy: IfNotPresent
+eum:
+  key: null
+  url: ""
+nodeport: false

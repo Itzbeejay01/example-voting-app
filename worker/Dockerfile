@@ -13,7 +13,7 @@ COPY . .
 RUN dotnet publish -c release -o /app -a $TARGETARCH --self-contained false --no-restore
 
 # Runtime image
-FROM mcr.microsoft.com/dotnet/runtime:10.0.13
+FROM mcr.microsoft.com/dotnet/runtime:10.0.14
 
 # Npgsql uses GSSAPI for Kerberos authentication when configured.
 RUN apt-get update && \

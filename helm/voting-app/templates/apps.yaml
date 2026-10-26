@@ -10,6 +10,9 @@ spec:
     metadata: { labels: { app: {{ $name }} } }
     spec:
       securityContext: { runAsNonRoot: true, seccompProfile: { type: RuntimeDefault } }
+      {{- with $.Values.imagePullSecrets }}
+      imagePullSecrets: {{ toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: {{ $name }}
           image: "{{ $config.image.repository }}:{{ $config.image.tag }}"
@@ -44,6 +47,9 @@ spec:
     metadata: { labels: { app: worker } }
     spec:
       securityContext: { runAsNonRoot: true, seccompProfile: { type: RuntimeDefault } }
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets: {{ toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: worker
           image: "{{ .Values.images.worker.repository }}:{{ .Values.images.worker.tag }}"

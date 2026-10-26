@@ -15,3 +15,5 @@ helm upgrade --install voting-app . -n voting --set images.vote.tag="$IMAGE_TAG"
 ```
 
 For a rollback demo, record `helm history voting-app -n voting`, deploy a nonexistent tag with `--set images.vote.tag=intentionally-bad`, observe `kubectl rollout status deployment/vote -n voting --timeout=90s` fail, then run `helm rollback voting-app PREVIOUS_REVISION -n voting --wait`. Verify pods and both HTTP endpoints. This live demonstration was not run without an approved cluster.
+
+GHCR packages may be private by default. Either make the three package images public in GitHub Packages settings, or create a Kubernetes `kubernetes.io/dockerconfigjson` secret named `ghcr-pull` in the namespace using an authorized read-only package token, then pass `--set 'imagePullSecrets[0].name=ghcr-pull'` to Helm. The chart supports that setting; never put the token in values files or GitHub logs.

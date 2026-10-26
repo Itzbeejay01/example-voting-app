@@ -4,6 +4,7 @@ images:
   worker: { repository: ghcr.io/itzbeejay01/example-voting-app-worker, tag: latest, pullPolicy: IfNotPresent }
   redis: { repository: redis, tag: 7.4-alpine, pullPolicy: IfNotPresent }
   postgres: { repository: postgres, tag: 15-alpine, pullPolicy: IfNotPresent }
+imagePullSecrets: []
 service:
   vote: { type: LoadBalancer, port: 80 }
   result: { type: LoadBalancer, port: 80 }

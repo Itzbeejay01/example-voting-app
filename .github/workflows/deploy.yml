@@ -1,0 +1,21 @@
+name: Deploy
+on: { workflow_dispatch: {} }
+permissions: { contents: read, id-token: write, packages: read }
+jobs:
+  deploy:
+    environment: capstone-aws
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v5
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+      - run: aws eks update-kubeconfig --name "${{ vars.EKS_CLUSTER_NAME }}" --region "${{ vars.AWS_REGION }}"
+      - uses: azure/setup-helm@v4
+      - name: Deploy exact commit images
+        env: { DEPLOY_SHA: "${{ github.sha }}" }
+        run: >-
+          helm upgrade --install voting-app helm/voting-app --namespace voting --create-namespace
+          --set "images.vote.tag=${DEPLOY_SHA}" --set "images.result.tag=${DEPLOY_SHA}" --set "images.worker.tag=${DEPLOY_SHA}"
+          --set postgres.existingSecret=voting-app-db --atomic --wait --timeout 5m

@@ -1,0 +1,17 @@
+images:
+  vote: { repository: ghcr.io/itzbeejay01/example-voting-app-vote, tag: latest, pullPolicy: IfNotPresent }
+  result: { repository: ghcr.io/itzbeejay01/example-voting-app-result, tag: latest, pullPolicy: IfNotPresent }
+  worker: { repository: ghcr.io/itzbeejay01/example-voting-app-worker, tag: latest, pullPolicy: IfNotPresent }
+  redis: { repository: redis, tag: 7.4-alpine, pullPolicy: IfNotPresent }
+  postgres: { repository: postgres, tag: 15-alpine, pullPolicy: IfNotPresent }
+service:
+  vote: { type: LoadBalancer, port: 80 }
+  result: { type: LoadBalancer, port: 80 }
+postgres:
+  storage: 2Gi
+  username: postgres
+  existingSecret: voting-app-db
+resources:
+  web: { requests: { cpu: 50m, memory: 64Mi }, limits: { cpu: 250m, memory: 256Mi } }
+  worker: { requests: { cpu: 50m, memory: 64Mi }, limits: { cpu: 250m, memory: 256Mi } }
+  data: { requests: { cpu: 50m, memory: 128Mi }, limits: { cpu: 500m, memory: 512Mi } }

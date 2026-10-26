@@ -1,9 +1,9 @@
-# add curl for healthcheck
+FROM node:24-bookworm-slim AS base
+
+# Install the runtime's healthcheck and init helpers.
 RUN apt-get update && \
     apt-get install -y --no-install-recommends curl tini && \
     rm -rf /var/lib/apt/lists/*
-
-FROM node:24-bookworm-slim AS base
 
 WORKDIR /usr/local/app
 

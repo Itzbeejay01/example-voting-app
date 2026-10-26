@@ -68,7 +68,9 @@ deal with them in Docker at a basic level.
 
 ## DevOps capstone deliverables
 
-The hardened local stack uses non-root Vote, Result, and Worker containers and unprivileged application port 8080. Run `npm test` in `result`, then `docker compose build --pull` and `docker compose up -d`. Submit a vote at port 8080 and view live results at port 8081.
+The hardened app images use non-root Vote (UID 10001), Result (UID 1000), and Worker (UID 999) containers on port 8080. Run `npm test` in `result`, then `docker compose build --pull` and `docker compose up -d` for the Compose stack.
+
+The Voting App Helm chart has been deployed and its rollback demonstrated on the local `devops-capstone` kind cluster. The verified release is `voting-app` in namespace `voting-app`; the existing PostgreSQL Secret and PVC are retained. See [Helm deployment instructions](helm/voting-app/README.md) and the [verification record](docs/verification.md) for the production Vote build, local image loading, endpoint checks, vote processing, revision history, failed image rollout, and explicit rollback evidence. This is local kind evidence only; it does not represent an AWS EKS deployment.
 
 ```mermaid
 flowchart LR
@@ -89,4 +91,4 @@ flowchart LR
 - [Robot Shop observability and reliability](capstone-2/README.md)
 - [Verification record](docs/verification.md)
 
-AWS creation, Kubernetes deployment, rollback, Robot Shop runtime verification, observability evidence, tracing, Slack delivery, and the incident drill require an approved test cluster. They are documented as unverified. Review cloud pricing and destroy the Terraform stack promptly after the demonstration.
+AWS creation/deployment, GHCR publication, GitHub OIDC deployment, Robot Shop runtime verification, observability evidence, tracing, Slack delivery, and the incident drill remain unverified. Terraform validation is not proof that AWS resources were deployed. Review cloud pricing before any future AWS demonstration.

@@ -10,6 +10,7 @@ spec:
       containers:
         - name: redis
           image: "{{ .Values.images.redis.repository }}:{{ .Values.images.redis.tag }}"
+          imagePullPolicy: {{ .Values.images.redis.pullPolicy }}
           ports: [{ name: redis, containerPort: 6379 }]
           readinessProbe: { tcpSocket: { port: redis }, periodSeconds: 5 }
           livenessProbe: { tcpSocket: { port: redis }, initialDelaySeconds: 10, periodSeconds: 10 }
@@ -35,10 +36,12 @@ spec:
   template:
     metadata: { labels: { app: db } }
     spec:
-      securityContext: { runAsNonRoot: true, runAsUser: 999, runAsGroup: 999, fsGroup: 999, seccompProfile: { type: RuntimeDefault } }
+      # Keep the official image entrypoint's default root startup so it can
+      # initialize the existing persistent directory and then drop to postgres.
       containers:
         - name: postgres
           image: "{{ .Values.images.postgres.repository }}:{{ .Values.images.postgres.tag }}"
+          imagePullPolicy: {{ .Values.images.postgres.pullPolicy }}
           env:
             - { name: POSTGRES_USER, value: {{ .Values.postgres.username | quote }} }
             - name: POSTGRES_PASSWORD
@@ -47,7 +50,6 @@ spec:
           volumeMounts: [{ name: data, mountPath: /var/lib/postgresql/data }]
           readinessProbe: { exec: { command: ["pg_isready", "-U", {{ .Values.postgres.username | quote }}] }, periodSeconds: 5 }
           livenessProbe: { tcpSocket: { port: postgres }, initialDelaySeconds: 20, periodSeconds: 10 }
-          securityContext: { allowPrivilegeEscalation: false, capabilities: { drop: ["ALL"] } }
           resources: {{ toYaml .Values.resources.data | nindent 12 }}
       volumes: [{ name: data, persistentVolumeClaim: { claimName: db-data } }]
 ---

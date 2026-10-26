@@ -17,13 +17,25 @@ spec:
         - name: {{ $name }}
           image: "{{ $config.image.repository }}:{{ $config.image.tag }}"
           imagePullPolicy: {{ $config.image.pullPolicy }}
+          {{- if eq $name "vote" }}
+          env:
+            - name: OPTION_A
+              value: {{ default "Cats" $.Values.vote.optionA | quote }}
+            - name: OPTION_B
+              value: {{ default "Dogs" $.Values.vote.optionB | quote }}
+          {{- end }}
           {{- if eq $name "result" }}
           env:
             - name: DATABASE_URL
               valueFrom: { secretKeyRef: { name: {{ $.Values.postgres.existingSecret }}, key: url } }
           {{- end }}
           ports: [{ name: http, containerPort: {{ $config.port }} }]
-          securityContext: { allowPrivilegeEscalation: false, capabilities: { drop: ["ALL"] } }
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: {{ ternary 10001 1000 (eq $name "vote") }}
+            runAsGroup: {{ ternary 10001 1000 (eq $name "vote") }}
+            allowPrivilegeEscalation: false
+            capabilities: { drop: ["ALL"] }
           readinessProbe: { httpGet: { path: /, port: http }, initialDelaySeconds: 5, periodSeconds: 5 }
           livenessProbe: { httpGet: { path: /, port: http }, initialDelaySeconds: 15, periodSeconds: 10 }
           resources: {{ toYaml $.Values.resources.web | nindent 12 }}
@@ -57,5 +69,10 @@ spec:
           env:
             - name: DATABASE_CONNECTION_STRING
               valueFrom: { secretKeyRef: { name: {{ .Values.postgres.existingSecret }}, key: connectionString } }
-          securityContext: { allowPrivilegeEscalation: false, capabilities: { drop: ["ALL"] } }
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 999
+            runAsGroup: 999
+            allowPrivilegeEscalation: false
+            capabilities: { drop: ["ALL"] }
           resources: {{ toYaml .Values.resources.worker | nindent 12 }}

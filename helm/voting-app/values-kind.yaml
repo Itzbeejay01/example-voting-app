@@ -1,0 +1,9 @@
+# Local kind-only image settings. Update the short SHA when rebuilding images.
+# Never use this file for EKS; use GHCR repositories and pull credentials there.
+images:
+  vote: { repository: voting-vote, tag: 7e19af6902c7, pullPolicy: Never }
+  result: { repository: voting-result, tag: 7e19af6902c7, pullPolicy: Never }
+  worker: { repository: voting-worker, tag: 7e19af6902c7, pullPolicy: Never }
+service:
+  vote: { type: ClusterIP, port: 80 }
+  result: { type: ClusterIP, port: 80 }

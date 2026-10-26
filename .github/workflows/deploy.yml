@@ -16,6 +16,7 @@ jobs:
       - name: Deploy exact commit images
         env: { DEPLOY_SHA: "${{ github.sha }}" }
         run: >-
-          helm upgrade --install voting-app helm/voting-app --namespace voting --create-namespace
+          helm upgrade --install voting-app helm/voting-app --namespace voting-app --create-namespace
           --set "images.vote.tag=${DEPLOY_SHA}" --set "images.result.tag=${DEPLOY_SHA}" --set "images.worker.tag=${DEPLOY_SHA}"
-          --set postgres.existingSecret=voting-app-db --atomic --wait --timeout 5m
+          --set postgres.existingSecret=voting-app-db --set imagePullSecrets[0].name=ghcr-pull
+          --atomic --wait --timeout 5m

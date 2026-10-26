@@ -5,15 +5,65 @@ prometheus:
     retention: 7d
     serviceMonitorSelectorNilUsesHelmValues: false
     resources: { requests: { cpu: 200m, memory: 512Mi }, limits: { cpu: "1", memory: 2Gi } }
+    additionalScrapeConfigs:
+      - job_name: robot-shop-web
+        metrics_path: /probe
+        params:
+          module: [http_2xx]
+        static_configs:
+          - targets: [http://web.robot-shop.svc.cluster.local:8080/]
+        relabel_configs:
+          - source_labels: [__address__]
+            target_label: __param_target
+          - source_labels: [__param_target]
+            target_label: instance
+          - target_label: __address__
+            replacement: prometheus-blackbox-exporter.monitoring.svc.cluster.local:9115
+      - job_name: robot-shop-cart
+        metrics_path: /metrics
+        static_configs:
+          - targets: [cart.robot-shop.svc.cluster.local:8080]
+            labels: { service: cart }
+      - job_name: robot-shop-payment
+        metrics_path: /metrics
+        static_configs:
+          - targets: [payment.robot-shop.svc.cluster.local:8080]
+            labels: { service: payment }
 alertmanager:
   alertmanagerSpec: { secrets: [slack-webhook] }
+  config:
+    route:
+      receiver: slack
+      group_by: [alertname, namespace]
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 4h
+    receivers:
+      - name: slack
+        slack_configs:
+          - api_url_file: /etc/alertmanager/secrets/slack-webhook/url
+            channel: "#robot-shop-alerts"
+            send_resolved: true
+            title: '{{ .Status | toUpper }}: {{ .CommonLabels.alertname }}'
+            text: '{{ range .Alerts }}{{ .Annotations.summary }} {{ .Annotations.runbook_url }}{{ end }}'
 additionalPrometheusRulesMap:
   robot-shop-slo:
     groups:
       - name: robot-shop-slo
         rules:
+          - record: robot_shop:availability:ratio_5m
+            expr: avg_over_time(probe_success{job="robot-shop-web"}[5m])
           - alert: RobotShopAvailabilityBudgetBurn
-            expr: (1 - sum(rate(http_requests_total{namespace="robot-shop",status!~"5.."}[5m])) / sum(rate(http_requests_total{namespace="robot-shop"}[5m]))) > 0.01
+            expr: robot_shop:availability:ratio_5m < 0.99
             for: 10m
             labels: { severity: warning }
-            annotations: { summary: "Robot Shop availability error budget is burning", runbook_url: "https://github.com/Itzbeejay01/example-voting-app/blob/capstone-1/devops/capstone-2/reliability/runbook.md" }
+            annotations:
+              summary: "Robot Shop web availability is below the 99% SLO"
+              runbook_url: "https://github.com/Itzbeejay01/example-voting-app/blob/capstone-1/devops/capstone-2/reliability/runbook.md"
+          - alert: RobotShopProbeMissing
+            expr: absent(up{job="robot-shop-web"}) or up{job="robot-shop-web"} == 0
+            for: 5m
+            labels: { severity: critical }
+            annotations:
+              summary: "Robot Shop web probe is missing or failing to scrape"
+              runbook_url: "https://github.com/Itzbeejay01/example-voting-app/blob/capstone-1/devops/capstone-2/reliability/runbook.md"

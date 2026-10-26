@@ -7,6 +7,7 @@
 - `npm test` in `result`: 3 passed, 0 failed.
 - `npm audit --omit=dev --audit-level=high` in `result`: 0 vulnerabilities.
 - `git diff --check`: passed.
+- Robot Shop dashboard JSON and Prometheus values YAML parsed successfully; 3 real scrape jobs are configured for web probes, cart, and payment.
 - Docker builds could not run because the Docker daemon socket was unavailable.
 - Terraform, Helm, and actionlint executables were not available in this environment, so their checks and deployment workflows were not repeated.
 

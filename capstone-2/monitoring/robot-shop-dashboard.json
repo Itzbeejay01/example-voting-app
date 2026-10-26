@@ -1,1 +1,52 @@
-{"annotations":{"list":[]},"editable":true,"panels":[{"type":"timeseries","title":"Request rate","targets":[{"expr":"sum by (service) (rate(http_requests_total{namespace=\"robot-shop\"}[5m]))"}],"gridPos":{"h":8,"w":8,"x":0,"y":0}},{"type":"timeseries","title":"5xx error rate","targets":[{"expr":"sum by (service) (rate(http_requests_total{namespace=\"robot-shop\",status=~\"5..\"}[5m]))"}],"gridPos":{"h":8,"w":8,"x":8,"y":0}},{"type":"timeseries","title":"p95 latency","targets":[{"expr":"histogram_quantile(0.95, sum by (le,service) (rate(http_request_duration_seconds_bucket{namespace=\"robot-shop\"}[5m])))"}],"gridPos":{"h":8,"w":8,"x":16,"y":0}}],"schemaVersion":39,"tags":["robot-shop"],"title":"Robot Shop SRE","uid":"robot-shop-sre","version":1}
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Synthetic web probe rate (probes/sec)",
+      "description": "Blackbox exporter checks against the live Robot Shop web service; this is probe traffic, not end-user request volume.",
+      "targets": [{ "expr": "sum(rate(probe_success{job=\"robot-shop-web\"}[5m]))", "legendFormat": "probes/sec" }],
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 0 }
+    },
+    {
+      "type": "timeseries",
+      "title": "Synthetic HTTP probe failure fraction",
+      "description": "Fraction of blackbox probes that failed during the preceding five minutes.",
+      "targets": [{ "expr": "1 - avg_over_time(probe_success{job=\"robot-shop-web\"}[5m])", "legendFormat": "failure fraction" }],
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 0 }
+    },
+    {
+      "type": "timeseries",
+      "title": "Synthetic web probe p95 duration",
+      "description": "p95 duration of real HTTP checks made by Prometheus through blackbox exporter.",
+      "targets": [{ "expr": "quantile_over_time(0.95, probe_duration_seconds{job=\"robot-shop-web\"}[5m])", "legendFormat": "seconds" }],
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 0 }
+    },
+    {
+      "type": "stat",
+      "title": "Cart metrics endpoint",
+      "description": "Prometheus scrape health for the upstream cart metrics endpoint.",
+      "targets": [{ "expr": "up{job=\"robot-shop-cart\"}", "legendFormat": "up (1) / down (0)" }],
+      "gridPos": { "h": 5, "w": 8, "x": 0, "y": 8 }
+    },
+    {
+      "type": "stat",
+      "title": "Payment metrics endpoint",
+      "description": "Prometheus scrape health for the upstream payment metrics endpoint.",
+      "targets": [{ "expr": "up{job=\"robot-shop-payment\"}", "legendFormat": "up (1) / down (0)" }],
+      "gridPos": { "h": 5, "w": 8, "x": 8, "y": 8 }
+    },
+    {
+      "type": "timeseries",
+      "title": "Robot Shop workload CPU",
+      "targets": [{ "expr": "sum by (pod) (rate(container_cpu_usage_seconds_total{namespace=\"robot-shop\",container!=\"\",container!=\"POD\"}[5m]))", "legendFormat": "{{pod}}" }],
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 8 }
+    }
+  ],
+  "schemaVersion": 39,
+  "tags": ["robot-shop"],
+  "title": "Robot Shop SRE",
+  "uid": "robot-shop-sre",
+  "version": 2
+}

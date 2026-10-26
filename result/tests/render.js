@@ -1,15 +1,13 @@
-var system = require('system');
-var page = require('webpage').create();
-var url = system.args[1];
+const { chromium } = require('playwright');
 
-page.onLoadFinished = function() {
-  setTimeout(function(){
-    console.log(page.content);
-    phantom.exit();
-  }, 1000);
-};
-
-page.open(url, function() {
-    page.evaluate(function() {
-  });
+(async () => {
+  const browser = await chromium.launch({ headless: true });
+  const page = await browser.newPage();
+  await page.goto(process.argv[2], { waitUntil: 'networkidle' });
+  await page.waitForFunction(() => document.body.textContent.includes('vote'), null, { timeout: 15000 });
+  console.log(await page.content());
+  await browser.close();
+})().catch((error) => {
+  console.error(error);
+  process.exit(1);
 });

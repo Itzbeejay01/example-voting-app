@@ -1,12 +1,9 @@
-FROM node:8.9-slim
+FROM mcr.microsoft.com/playwright:v1.56.1-noble
 
-RUN apt-get update -qq && apt-get install -qy \ 
-    ca-certificates \
-    bzip2 \
-    curl \
-    libfontconfig \
-    --no-install-recommends
-RUN yarn global add phantomjs-prebuilt
-ADD . /app
-WORKDIR /app
-CMD ["/app/tests.sh"]
+WORKDIR /tests
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev
+COPY . .
+
+USER pwuser
+CMD ["node", "render.js", "http://result:8080"]

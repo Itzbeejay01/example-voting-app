@@ -3,7 +3,7 @@ FROM python:3.11.17-slim-bookworm AS base
 
 # Add curl for healthcheck
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends curl && \
+    apt-get install -y --no-install-recommends curl libssl3 openssl && \
     rm -rf /var/lib/apt/lists/*
 
 # Set the application directory
@@ -28,6 +28,11 @@ CMD ["python", "app.py"]
 
 # final defines the stage that will bundle the application for production
 FROM base AS final
+
+# The application does not need Python build tooling at runtime. In particular,
+# the base image's setuptools vendors vulnerable jaraco.context and wheel copies.
+# Remove packaging tooling from production rather than ignoring Trivy findings.
+RUN python -m pip uninstall --yes setuptools wheel
 
 # Copy our code from the current folder to the working directory inside the container
 COPY . .

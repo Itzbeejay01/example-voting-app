@@ -4,7 +4,11 @@ Create the database secret, then install with immutable SHA tags:
 
 ```sh
 kubectl create namespace voting
-kubectl -n voting create secret generic voting-app-db --from-literal=password='REPLACE_ME'
+DB_PASSWORD='REPLACE_ME'
+kubectl -n voting create secret generic voting-app-db \
+  --from-literal=password="$DB_PASSWORD" \
+  --from-literal=url="postgres://postgres:${DB_PASSWORD}@db/postgres" \
+  --from-literal=connectionString="Server=db;Username=postgres;Password=${DB_PASSWORD};"
 helm upgrade --install voting-app . -n voting --set images.vote.tag=$GITHUB_SHA --set images.result.tag=$GITHUB_SHA --set images.worker.tag=$GITHUB_SHA --wait --timeout 5m
 ```
 

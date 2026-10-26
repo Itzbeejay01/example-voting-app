@@ -18,6 +18,8 @@ services:
 
   result:
     image: dockersamples/examplevotingapp_result
+    environment:
+      DATABASE_URL: "postgres://postgres:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@db/postgres"
     depends_on:
       db:
         condition: service_healthy 
@@ -29,6 +31,8 @@ services:
 
   worker:
     image: dockersamples/examplevotingapp_worker
+    environment:
+      DATABASE_CONNECTION_STRING: "Server=db;Username=postgres;Password=${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env};"
     depends_on:
       redis:
         condition: service_healthy 
@@ -51,7 +55,7 @@ services:
     image: postgres:15-alpine
     environment:
       POSTGRES_USER: "postgres"
-      POSTGRES_PASSWORD: "postgres"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}"
     volumes:
       - "db-data:/var/lib/postgresql/data"
       - "./healthchecks:/healthchecks"

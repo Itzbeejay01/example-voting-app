@@ -14,6 +14,11 @@ spec:
         - name: {{ $name }}
           image: "{{ $config.image.repository }}:{{ $config.image.tag }}"
           imagePullPolicy: {{ $config.image.pullPolicy }}
+          {{- if eq $name "result" }}
+          env:
+            - name: DATABASE_URL
+              valueFrom: { secretKeyRef: { name: {{ $.Values.postgres.existingSecret }}, key: url } }
+          {{- end }}
           ports: [{ name: http, containerPort: {{ $config.port }} }]
           securityContext: { allowPrivilegeEscalation: false, capabilities: { drop: ["ALL"] } }
           readinessProbe: { httpGet: { path: /, port: http }, initialDelaySeconds: 5, periodSeconds: 5 }
@@ -43,5 +48,8 @@ spec:
         - name: worker
           image: "{{ .Values.images.worker.repository }}:{{ .Values.images.worker.tag }}"
           imagePullPolicy: {{ .Values.images.worker.pullPolicy }}
+          env:
+            - name: DATABASE_CONNECTION_STRING
+              valueFrom: { secretKeyRef: { name: {{ .Values.postgres.existingSecret }}, key: connectionString } }
           securityContext: { allowPrivilegeEscalation: false, capabilities: { drop: ["ALL"] } }
           resources: {{ toYaml .Values.resources.worker | nindent 12 }}

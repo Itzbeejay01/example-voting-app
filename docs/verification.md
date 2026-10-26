@@ -1,5 +1,17 @@
 # Verification record
 
+## Follow-up checks (October 26, 2026)
+
+- Instructor PDF was not present in the workspace; the supplied detailed assignment was used.
+- `POSTGRES_PASSWORD=local-test-password docker compose config --quiet`: passed for the main Compose file, image-based Compose file, and Result test Compose file.
+- `npm test` in `result`: 3 passed, 0 failed.
+- `npm audit --omit=dev --audit-level=high` in `result`: 0 vulnerabilities.
+- `git diff --check`: passed.
+- Docker builds could not run because the Docker daemon socket was unavailable.
+- Terraform, Helm, and actionlint executables were not available in this environment, so their checks and deployment workflows were not repeated.
+
+The verification entries below were recorded in the repository before this follow-up; they were not independently repeated during it.
+
 Local verification on Apple Silicon:
 
 - `npm test` in `result`: 3 passed, 0 failed.
